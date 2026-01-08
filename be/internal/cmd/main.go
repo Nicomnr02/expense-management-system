@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"expense-management-system/config"
-	"expense-management-system/database"
+	"expense-management-system/internal/config"
+	"expense-management-system/internal/database"
 	"expense-management-system/pkg/logger"
 	"log"
 	"os"
@@ -21,7 +21,7 @@ func main() {
 	cfg := config.LoadConfig()
 
 	log.Println("initializing logger...")
-	logger := logger.InitZap(cfg)
+	logger := logger.InitZap(cfg.AppEnv)
 	defer logger.Sync()
 
 	log.Println("initializing database connection...")

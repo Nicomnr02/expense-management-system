@@ -1,18 +1,17 @@
 package logger
 
 import (
-	"expense-management-system/config"
 	"log"
 
 	"go.uber.org/zap"
 )
 
-func InitZap(cfg *config.Config) *zap.Logger {
+func InitZap(ENV string) *zap.Logger {
 	var (
 		zlog *zap.Logger
 		err  error
 	)
-	if cfg.AppEnv == "production" {
+	if ENV == "production" {
 		zlog, err = zap.NewProduction()
 	} else {
 		zlog, err = zap.NewDevelopment()
