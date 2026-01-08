@@ -1,0 +1,7 @@
+package dto
+
+type Page struct {
+	Page  int `json:"page,omitempty"`
+	Limit int `json:"limit,omitempty"`
+	Total int `json:"total,omitempty"`
+}
