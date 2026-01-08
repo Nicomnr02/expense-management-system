@@ -7,18 +7,9 @@ import (
 )
 
 func InitZap(ENV string) *zap.Logger {
-	var (
-		zlog *zap.Logger
-		err  error
-	)
-	if ENV == "production" {
-		zlog, err = zap.NewProduction()
-	} else {
-		zlog, err = zap.NewDevelopment()
-	}
+	zlog, err := zap.NewProduction()
 	if err != nil {
 		log.Fatalf("Failed to init logger: %s", err.Error())
 	}
-	defer zlog.Sync()
 	return zlog
 }

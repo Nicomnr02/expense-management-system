@@ -41,7 +41,7 @@ func LoadConfig() *Config {
 			log.Fatalf("No .env file found (using system envs)")
 		}
 	}
-	
+
 	AppReadTimeout, err := strconv.Atoi(getEnv("APP_READ_TIMEOUT", "10"))
 	if err != nil {
 		log.Fatal("invalid APP_READ_TIMEOUT:", err)
@@ -85,6 +85,7 @@ func LoadConfig() *Config {
 
 		DBHost:              getEnv("DB_HOST", "localhost"),
 		DBPort:              getEnv("DB_PORT", "5430"),
+		DBName:              getEnv("DB_NAME", "expense_management"),
 		DBUser:              getEnv("DB_USER", "postgres"),
 		DBPassword:          getEnv("DB_PASSWORD", "sec"),
 		DBSSLMode:           getEnv("DB_SSL_MODE", "disable"),

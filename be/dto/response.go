@@ -43,11 +43,12 @@ func SuccessPage(ctx *fiber.Ctx, data interface{}, page Page) error {
 	})
 }
 
-func Error(ctx *fiber.Ctx, err *fiber.Error, data interface{}) error {
-	return ctx.Status(err.Code).JSON(response{
-		Code:    err.Code,
+func Error(ctx *fiber.Ctx, err error, data interface{}) error {
+	fberror := err.(*fiber.Error)
+	return ctx.Status(fberror.Code).JSON(response{
+		Code:    fberror.Code,
 		Success: false,
-		Message: err.Message,
+		Message: fberror.Message,
 		Data:    data,
 	})
 }

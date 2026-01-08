@@ -8,7 +8,9 @@ import (
 	"expense-management-system/config"
 	"expense-management-system/database"
 	"expense-management-system/pkg/httpserver"
+	"expense-management-system/pkg/jwt"
 	"expense-management-system/pkg/logger"
+	"expense-management-system/pkg/validator"
 	"log"
 	"os"
 	"os/signal"
@@ -37,9 +39,21 @@ func main() {
 		IdleTimeout:  time.Duration(cfg.AppIdleTimeout) * time.Second,
 	})
 
+	log.Println("initializing validator...")
+	validator := validator.New()
+
+	log.Println("initializing JWT Manager...")
+	JWTManager := jwt.NewJWTManager(
+		cfg.JWTAccessSecret,
+		cfg.JWTRefreshSecret,
+		cfg.AppName,
+		cfg.JWTAccessTokenDurationMinutes,
+		cfg.JWTRefreshTokenDurationMinutes,
+	)
+
 	log.Println("preparing modules...")
 	health.Init(server, database)
-	auth.Init(server, database)
+	auth.Init(server, database, validator, JWTManager, logger)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

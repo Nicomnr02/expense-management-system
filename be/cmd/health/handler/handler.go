@@ -23,7 +23,7 @@ func New(server httpserver.Server, database *database.Database) {
 		database: database,
 	}
 
-	server.App.Get("/health", server.Handler(handler.Check))
+	server.App.Get("/health", server.Use(handler.Check))
 }
 
 func (h *healthHandlerImpl) Check(ctx httpserver.Context) error {
@@ -38,7 +38,6 @@ func (h *healthHandlerImpl) Check(ctx httpserver.Context) error {
 			},
 		})
 	}
-
 
 	return dto.Success(ctx, http.StatusOK, fiber.Map{
 		"status": enum.UP,

@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	"context"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -26,10 +27,26 @@ func (s *Server) Group(domain string) fiber.Router {
 
 type Context *fiber.Ctx
 
-func (s *Server) Handler(fn func(Context) error) fiber.Handler {
+func (s *Server) Context(c Context) context.Context {
+	var ctx context.Context
+	_ = func(c *fiber.Ctx) error {
+		ctx = c.Context()
+		return nil
+	}(c)
+
+	return ctx
+}
+
+func (s *Server) Use(fn func(Context) error) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		return fn(c)
 	}
+}
+
+func (s *Server) Parse(c Context, out any) error {
+	return func(c *fiber.Ctx) error {
+		return c.BodyParser(&out)
+	}(c)
 }
 
 func New(cfg ServerConfig) Server {

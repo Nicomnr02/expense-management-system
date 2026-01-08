@@ -2,25 +2,24 @@ package authhandler
 
 import (
 	authservice "expense-management-system/cmd/auth/service"
-	"expense-management-system/dto"
 	"expense-management-system/pkg/httpserver"
-	"net/http"
+
+	"go.uber.org/zap"
 )
 
 type authHandlerImpl struct {
 	server      httpserver.Server
 	authservice authservice.AuthService
+	logger      *zap.Logger
 }
 
-func (h *authHandlerImpl) Login(ctx httpserver.Context) error {
-	return dto.Success(ctx, http.StatusOK, "mantap")
-}
+func New(server httpserver.Server, authservice authservice.AuthService, logger *zap.Logger) {
+	handler := authHandlerImpl{
+		server:      server,
+		authservice: authservice,
+		logger:      logger,
+	}
 
-func New(server httpserver.Server, authservice authservice.AuthService) {
-	// handler := authHandlerImpl{
-	// 	server:      server,
-	// 	authservice: authservice,
-	// }
-
-	// auth := server.Group("auth")
+	auth := server.Group("auth")
+	auth.Post("/login", server.Use(handler.Login))
 }
