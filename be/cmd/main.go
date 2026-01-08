@@ -2,8 +2,9 @@ package main
 
 import (
 	"context"
-	"expense-management-system/internal/config"
-	"expense-management-system/internal/database"
+
+	"expense-management-system/config"
+	"expense-management-system/database"
 	"expense-management-system/pkg/logger"
 	"log"
 	"os"

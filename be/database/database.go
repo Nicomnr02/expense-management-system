@@ -2,7 +2,7 @@ package database
 
 import (
 	"context"
-	"expense-management-system/internal/config"
+	"expense-management-system/config"
 	"fmt"
 	"log"
 	"os"

@@ -1,4 +1,4 @@
-package httperror
+package dto
 
 import (
 	"github.com/gofiber/fiber/v2"
