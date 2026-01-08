@@ -3,16 +3,17 @@ package main
 import (
 	"context"
 
+	"expense-management-system/cmd/auth"
+	"expense-management-system/cmd/health"
 	"expense-management-system/config"
 	"expense-management-system/database"
+	"expense-management-system/pkg/httpserver"
 	"expense-management-system/pkg/logger"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-
-	"github.com/gofiber/fiber/v2"
 )
 
 func main() {
@@ -26,23 +27,26 @@ func main() {
 	defer logger.Sync()
 
 	log.Println("initializing database connection...")
-	database := database.Init(cfg)
+	database := database.New(cfg)
+	database.Init()
 
 	log.Println("initializing server connection...")
-	app := fiber.New(
-		fiber.Config{
-			ReadTimeout:  time.Duration(cfg.AppReadTimeout) * time.Second,
-			WriteTimeout: time.Duration(cfg.AppWriteTimeout) * time.Second,
-			IdleTimeout:  time.Duration(cfg.AppIdleTimeout) * time.Second,
-		},
-	)
+	server := httpserver.New(httpserver.ServerConfig{
+		ReadTimeout:  time.Duration(cfg.AppReadTimeout) * time.Second,
+		WriteTimeout: time.Duration(cfg.AppWriteTimeout) * time.Second,
+		IdleTimeout:  time.Duration(cfg.AppIdleTimeout) * time.Second,
+	})
+
+	log.Println("preparing modules...")
+	health.Init(server, database)
+	auth.Init(server, database)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	go func() {
 		log.Printf("starting server on port %s...", cfg.AppPort)
-		if err := app.Listen(":" + cfg.AppPort); err != nil {
+		if err := server.App.Listen(":" + cfg.AppPort); err != nil {
 			cancel()
 		}
 	}()
@@ -64,7 +68,7 @@ func main() {
 	log.Println("closing scheduler...")
 
 	log.Println("closing app...")
-	_ = app.Shutdown()
+	server.Shutdown()
 
 	log.Printf("Success shutdown gracefully. Context: %v | Time: %s", ctx.Err(), time.Now().Format(time.RFC3339))
 }

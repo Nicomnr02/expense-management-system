@@ -12,7 +12,16 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func Init(cfg *config.Config) *pgxpool.Pool {
+type Database struct {
+	Cfg  *config.Config
+	Conn *pgxpool.Pool
+}
+
+func New(Cfg *config.Config) *Database {
+	return &Database{Cfg, nil}
+}
+
+func (d *Database) Init() {
 	if os.Getenv("APP_ENV") == "" {
 		err := godotenv.Load()
 		if err != nil {
@@ -22,7 +31,7 @@ func Init(cfg *config.Config) *pgxpool.Pool {
 
 	connStr := fmt.Sprintf(
 		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
-		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName,
+		d.Cfg.DBUser, d.Cfg.DBPassword, d.Cfg.DBHost, d.Cfg.DBPort, d.Cfg.DBName,
 	)
 
 	config, err := pgxpool.ParseConfig(connStr)
@@ -30,8 +39,8 @@ func Init(cfg *config.Config) *pgxpool.Pool {
 		log.Fatalf("Unable to parse config: %v", err)
 	}
 
-	config.MaxConns = int32(cfg.DBMaxConns)
-	config.MaxConnIdleTime = time.Duration(cfg.DBMaxConnIdle) * time.Minute
+	config.MaxConns = int32(d.Cfg.DBMaxConns)
+	config.MaxConnIdleTime = time.Duration(d.Cfg.DBMaxConnIdle) * time.Minute
 
 	ctx := context.Background()
 
@@ -40,12 +49,15 @@ func Init(cfg *config.Config) *pgxpool.Pool {
 		log.Fatalf("Unable to connect to database: %v", err)
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, time.Duration(cfg.DBConnectionTimeout)*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(d.Cfg.DBConnectionTimeout)*time.Second)
 	defer cancel()
 	if err := pool.Ping(ctx); err != nil {
 		log.Fatalf("Unable to ping DB: %v", err)
 	}
 
-	return pool
+	d.Conn = pool
+}
 
+func (d *Database) Close() {
+	d.Conn.Close()
 }

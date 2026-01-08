@@ -1,2 +1,2 @@
 run:
-	go run internal/cmd/main.go
+	go run cmd/main.go

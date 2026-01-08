@@ -43,11 +43,11 @@ func SuccessPage(ctx *fiber.Ctx, data interface{}, page Page) error {
 	})
 }
 
-func Error(ctx *fiber.Ctx, err *fiber.Error) error {
+func Error(ctx *fiber.Ctx, err *fiber.Error, data interface{}) error {
 	return ctx.Status(err.Code).JSON(response{
 		Code:    err.Code,
 		Success: false,
 		Message: err.Message,
-		Data:    nil,
+		Data:    data,
 	})
 }
