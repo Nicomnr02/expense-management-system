@@ -6,6 +6,7 @@ BEGIN
         WHERE typname = 'expense_status'
     ) THEN
         CREATE TYPE expense_status AS ENUM (
+            'Awaiting Approval',
             'Pending',
             'Approved',
             'Rejected',
