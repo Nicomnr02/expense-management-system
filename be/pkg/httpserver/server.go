@@ -1,7 +1,6 @@
 package httpserver
 
 import (
-	"context"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -25,22 +24,14 @@ func (s *Server) Group(domain string) fiber.Router {
 	return s.App.Group(domain)
 }
 
-type Context *fiber.Ctx
-
-func (s *Server) Context(c Context) context.Context {
-	var ctx context.Context
-	_ = func(c *fiber.Ctx) error {
-		ctx = c.Context()
-		return nil
-	}(c)
-
-	return ctx
-}
-
 func (s *Server) Use(fn func(Context) error) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		return fn(c)
 	}
+}
+
+func (s *Server) Middleware(m fiber.Handler) {
+	_ = s.App.Use(m)
 }
 
 func (s *Server) Parse(c Context, out any) error {
@@ -49,7 +40,7 @@ func (s *Server) Parse(c Context, out any) error {
 	}(c)
 }
 
-func New(cfg ServerConfig) Server {
+func New(cfg ServerConfig) *Server {
 	app := fiber.New(
 		fiber.Config{
 			ReadTimeout:  cfg.ReadTimeout,
@@ -57,7 +48,7 @@ func New(cfg ServerConfig) Server {
 			IdleTimeout:  cfg.IdleTimeout,
 		},
 	)
-	return Server{
+	return &Server{
 		App: app,
 	}
 }

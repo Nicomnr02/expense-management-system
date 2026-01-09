@@ -3,21 +3,17 @@ package authhandler
 import (
 	authservice "expense-management-system/cmd/auth/service"
 	"expense-management-system/pkg/httpserver"
-
-	"go.uber.org/zap"
 )
 
 type authHandlerImpl struct {
-	server      httpserver.Server
+	server      *httpserver.Server
 	authservice authservice.AuthService
-	logger      *zap.Logger
 }
 
-func New(server httpserver.Server, authservice authservice.AuthService, logger *zap.Logger) {
+func New(server *httpserver.Server, authservice authservice.AuthService) {
 	handler := authHandlerImpl{
 		server:      server,
 		authservice: authservice,
-		logger:      logger,
 	}
 
 	auth := server.Group("auth")

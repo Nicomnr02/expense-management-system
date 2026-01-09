@@ -13,11 +13,11 @@ import (
 )
 
 type healthHandlerImpl struct {
-	server   httpserver.Server
+	server   *httpserver.Server
 	database *database.Database
 }
 
-func New(server httpserver.Server, database *database.Database) {
+func New(server *httpserver.Server, database *database.Database) {
 	handler := healthHandlerImpl{
 		server:   server,
 		database: database,
@@ -27,9 +27,11 @@ func New(server httpserver.Server, database *database.Database) {
 }
 
 func (h *healthHandlerImpl) Check(ctx httpserver.Context) error {
+	log := httpserver.UseLogger(ctx)
 	time := time.Now().Format(time.RFC3339)
 	err := h.database.Conn.Ping(context.Background())
 	if err != nil {
+		log.Error(err.Error())
 		return dto.Error(ctx, dto.ErrInternalServer(err.Error()), fiber.Map{
 			"status": enum.DOWN,
 			"time":   time,

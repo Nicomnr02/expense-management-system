@@ -6,6 +6,6 @@ import (
 	"expense-management-system/pkg/httpserver"
 )
 
-func Init(server httpserver.Server, database *database.Database) {
+func Init(server *httpserver.Server, database *database.Database) {
 	healthhandler.New(server, database)
 }
