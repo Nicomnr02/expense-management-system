@@ -5,17 +5,21 @@ import (
 	authdto "expense-management-system/cmd/auth/dto"
 	authquery "expense-management-system/cmd/auth/repository/query"
 	"expense-management-system/dto"
-	"expense-management-system/pkg/httpserver"
+	"expense-management-system/internal/contextkey"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5"
+	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (s *authserviceImpl) Login(ctx httpserver.Context, req authdto.LoginReq) (authdto.LoginRes, error) {
+func (s *authserviceImpl) Login(c *fiber.Ctx, req authdto.LoginReq) (authdto.LoginRes, error) {
 
-	var c = httpserver.UseContext(ctx)
-	var log = httpserver.UseLogger(ctx)
-	var data authdto.LoginRes
+	var (
+		ctx  = c.Context()
+		log  = c.Locals(contextkey.Logger).(*zap.Logger)
+		data authdto.LoginRes
+	)
 
 	err := s.validator.Validate.Struct(&req)
 	if err != nil {
@@ -23,7 +27,7 @@ func (s *authserviceImpl) Login(ctx httpserver.Context, req authdto.LoginReq) (a
 		return data, dto.ErrBadRequest("Invalid email or password")
 	}
 
-	user, err := s.authrepository.FetchUser(c, authquery.FetchUser{
+	user, err := s.authrepository.FetchUser(ctx, authquery.FetchUser{
 		Email: req.Email,
 	})
 	if err != nil {

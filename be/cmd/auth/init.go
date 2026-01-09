@@ -5,15 +5,16 @@ import (
 	authrepository "expense-management-system/cmd/auth/repository"
 	authservice "expense-management-system/cmd/auth/service"
 	"expense-management-system/database"
-	"expense-management-system/pkg/httpserver"
 	"expense-management-system/pkg/jwt"
 	"expense-management-system/pkg/validator"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 func Init(
-	server *httpserver.Server,
+	server *fiber.App,
 	database *database.Database,
-	validator validator.Validator,
+	validator *validator.Validator,
 	JWTManager *jwt.JWTManager,
 ) {
 	authRepository := authrepository.New(database)

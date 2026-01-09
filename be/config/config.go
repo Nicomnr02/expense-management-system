@@ -32,10 +32,14 @@ type Config struct {
 	JWTRefreshSecret               string
 	JWTAccessTokenDurationMinutes  time.Duration
 	JWTRefreshTokenDurationMinutes time.Duration
+
+	MinExpenseAmount  int
+	MaxExpenseAmount  int
+	ApprovalThreshold int
 }
 
 func LoadConfig() *Config {
-	if os.Getenv("ENV") != "production" {
+	if os.Getenv("APP_ENV") != "production" {
 		err := godotenv.Load()
 		if err != nil {
 			log.Fatalf("No .env file found (using system envs)")
@@ -75,6 +79,10 @@ func LoadConfig() *Config {
 	jwtAccessTokenDurationTime := time.Duration(jwtAccessTokenDuration) * time.Minute
 	jwtRefreshTokenDurationTime := time.Duration(jwtRefreshTokenDuration) * time.Minute
 
+	minExpenseAmount, _ := strconv.Atoi(getEnv("MIN_EXPENSE_AMOUNT", "10000"))
+	maxExpenseAmount, _ := strconv.Atoi(getEnv("MAX_EXPENSE_AMOUNT", "50000000"))
+	approvalThreshold, _ := strconv.Atoi(getEnv("APPROVALTHRESHOLD", "1000000"))
+
 	return &Config{
 		AppName:         getEnv("APP_NAME", "expenses-management-system"),
 		AppPort:         getEnv("APP_PORT", "3000"),
@@ -97,6 +105,10 @@ func LoadConfig() *Config {
 		JWTRefreshSecret:               getEnv("JWT_REFRESH_SECRET", "supersecret"),
 		JWTAccessTokenDurationMinutes:  jwtAccessTokenDurationTime,
 		JWTRefreshTokenDurationMinutes: jwtRefreshTokenDurationTime,
+
+		MinExpenseAmount:  minExpenseAmount,
+		MaxExpenseAmount:  maxExpenseAmount,
+		ApprovalThreshold: approvalThreshold,
 	}
 
 }

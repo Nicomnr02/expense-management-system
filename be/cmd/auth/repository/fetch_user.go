@@ -32,6 +32,10 @@ func (r *AuthrepositoryImpl) queryFetchUser(sql string, q authquery.FetchUser) (
 		values []any
 	)
 
+	if q.ID > 0 {
+		keys = append(keys, fmt.Sprintf("id = $%d", len(values)+1))
+		values = append(values, q.ID)
+	}
 	if len(q.Email) > 0 {
 		keys = append(keys, fmt.Sprintf("email = $%d", len(values)+1))
 		values = append(values, q.Email)

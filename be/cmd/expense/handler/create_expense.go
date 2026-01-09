@@ -1,18 +1,18 @@
-package authhandler
+package expensehandler
 
 import (
-	authdto "expense-management-system/cmd/auth/dto"
+	expensedto "expense-management-system/cmd/expense/dto"
 	"expense-management-system/dto"
 	"expense-management-system/internal/contextkey"
 	"net/http"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
 )
 
-func (h *authHandlerImpl) Login(c *fiber.Ctx) error {
-
-	var request authdto.LoginReq
+func (h *expenseHandlerImpl) CreateExpense(c *fiber.Ctx) error {
+	var request expensedto.CreateExpenseReq
 	var log = c.Locals(contextkey.Logger).(*zap.Logger)
 
 	err := c.BodyParser(&request)
@@ -21,10 +21,12 @@ func (h *authHandlerImpl) Login(c *fiber.Ctx) error {
 		return dto.Error(c, dto.ErrBadRequest("Invalid request data"), nil)
 	}
 
-	data, err := h.authservice.Login(c, request)
+	request.Timestamp = time.Now()
+	data, err := h.expenseservice.CreateExpense(c, request)
 	if err != nil {
 		return dto.Error(c, err, nil)
 	}
 
 	return dto.Success(c, http.StatusOK, data)
+
 }

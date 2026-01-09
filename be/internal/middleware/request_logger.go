@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"expense-management-system/internal/contextkey"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -18,10 +19,10 @@ func RequestID(log *zap.Logger) fiber.Handler {
 		c.Set("X-Request-ID", requestID)
 
 		reqLogger := log.With(
-			zap.String("request_id", requestID),
+			zap.String(string(contextkey.RequestID), requestID),
 		)
 
-		c.Locals("logger", reqLogger)
+		c.Locals(contextkey.Logger, reqLogger)
 
 		return c.Next()
 	}
@@ -31,7 +32,7 @@ func RequestLogger() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		start := time.Now()
 
-		log := c.Locals("logger").(*zap.Logger)
+		log := c.Locals(contextkey.Logger).(*zap.Logger)
 
 		err := c.Next()
 

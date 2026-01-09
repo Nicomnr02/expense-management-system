@@ -5,34 +5,35 @@ import (
 	"expense-management-system/cmd/health/enum"
 	"expense-management-system/database"
 	"expense-management-system/dto"
-	"expense-management-system/pkg/httpserver"
+	"expense-management-system/internal/contextkey"
 	"net/http"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"go.uber.org/zap"
 )
 
 type healthHandlerImpl struct {
-	server   *httpserver.Server
+	router   fiber.Router
 	database *database.Database
 }
 
-func New(server *httpserver.Server, database *database.Database) {
+func New(server *fiber.App, database *database.Database) {
 	handler := healthHandlerImpl{
-		server:   server,
+		router:   server,
 		database: database,
 	}
 
-	server.App.Get("/health", server.Use(handler.Check))
+	server.Get("/health", handler.Check)
 }
 
-func (h *healthHandlerImpl) Check(ctx httpserver.Context) error {
-	log := httpserver.UseLogger(ctx)
+func (h *healthHandlerImpl) Check(c *fiber.Ctx) error {
+	log := c.Locals(contextkey.Logger).(*zap.Logger)
 	time := time.Now().Format(time.RFC3339)
 	err := h.database.Conn.Ping(context.Background())
 	if err != nil {
 		log.Error(err.Error())
-		return dto.Error(ctx, dto.ErrInternalServer(err.Error()), fiber.Map{
+		return dto.Error(c, dto.ErrInternalServer(err.Error()), fiber.Map{
 			"status": enum.DOWN,
 			"time":   time,
 			"deps": map[string]string{
@@ -41,7 +42,7 @@ func (h *healthHandlerImpl) Check(ctx httpserver.Context) error {
 		})
 	}
 
-	return dto.Success(ctx, http.StatusOK, fiber.Map{
+	return dto.Success(c, http.StatusOK, fiber.Map{
 		"status": enum.UP,
 		"time":   time,
 		"deps": map[string]string{

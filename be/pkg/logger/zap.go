@@ -7,9 +7,14 @@ import (
 )
 
 func InitZap() *zap.Logger {
-	zlog, err := zap.NewProduction()
+	cfg := zap.NewProductionConfig()
+
+	cfg.DisableStacktrace = true
+
+	logger, err := cfg.Build()
 	if err != nil {
-		log.Fatalf("Failed to init logger: %s", err.Error())
+		log.Fatal(err)
 	}
-	return zlog
+
+	return logger
 }

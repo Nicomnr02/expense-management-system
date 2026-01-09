@@ -25,7 +25,6 @@ func (d *Database) Init() error {
 		err := godotenv.Load()
 		if err != nil {
 			return err
-			// log.Fatal("No .env loaded")
 		}
 	}
 
@@ -37,7 +36,6 @@ func (d *Database) Init() error {
 	config, err := pgxpool.ParseConfig(connStr)
 	if err != nil {
 		return err
-		// log.Fatalf("Unable to parse config: %v", err)
 	}
 
 	config.MaxConns = int32(d.Cfg.DBMaxConns)
@@ -48,14 +46,12 @@ func (d *Database) Init() error {
 	pool, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
 		return err
-		// log.Fatalf("Unable to connect to database: %v", err)
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(d.Cfg.DBConnectionTimeout)*time.Second)
 	defer cancel()
 	if err := pool.Ping(ctx); err != nil {
 		return err
-		// log.Fatalf("Unable to ping DB: %v", err)
 	}
 
 	d.Conn = pool
