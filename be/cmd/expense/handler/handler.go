@@ -25,4 +25,5 @@ func New(server *fiber.App, expenseservice expenseservice.ExpenseService,
 	expenses := server.Group("expenses", middleware.Authenticate(JWTManager))
 
 	expenses.Post("/", handler.CreateExpense)
+	expenses.Get("/", handler.FetchExpense)
 }

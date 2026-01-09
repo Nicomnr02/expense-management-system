@@ -83,8 +83,8 @@ func (s *expenseServiceImpl) CreateExpense(c *fiber.Ctx, req expensedto.CreateEx
 		authquery.FetchUser{ID: expense.UserID},
 	)
 	if err != nil {
-		log.Error(err.Error())
-		return data, dto.ErrInternalServer("User not found")
+		log.Warn(err.Error())
+		return data, dto.ErrBadRequest("User not found")
 	}
 
 	tx, err := s.transaction.Begin(ctx)
