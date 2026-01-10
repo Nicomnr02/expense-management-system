@@ -5,8 +5,8 @@ import (
 	expensedomain "expense-management-system/cmd/expense/domain"
 	expensedto "expense-management-system/cmd/expense/dto"
 	expenseenum "expense-management-system/cmd/expense/enum"
-	"expense-management-system/dto"
 	"expense-management-system/internal/contextkey"
+	"expense-management-system/model"
 	"expense-management-system/pkg/jwt"
 
 	"fmt"
@@ -26,11 +26,11 @@ func (s *expenseServiceImpl) CreateExpense(c *fiber.Ctx, req expensedto.CreateEx
 	err := s.validator.ValidateStruct(req)
 	if err != nil {
 		log.Warn(err.Error())
-		return data, dto.ErrBadRequest(err.Error())
+		return data, model.ErrBadRequest(err.Error())
 	}
 
 	if req.AmountIDR < s.cfg.MinExpenseAmount || req.AmountIDR > s.cfg.MaxExpenseAmount {
-		return data, dto.ErrBadRequest(
+		return data, model.ErrBadRequest(
 			fmt.Sprintf("Amount must be between %d and %d",
 				s.cfg.MinExpenseAmount,
 				s.cfg.MaxExpenseAmount,
@@ -84,7 +84,7 @@ func (s *expenseServiceImpl) CreateExpense(c *fiber.Ctx, req expensedto.CreateEx
 	)
 	if err != nil {
 		log.Warn(err.Error())
-		return data, dto.ErrBadRequest("User not found")
+		return data, model.ErrBadRequest("User not found")
 	}
 
 	tx, err := s.transaction.Begin(ctx)
@@ -97,14 +97,14 @@ func (s *expenseServiceImpl) CreateExpense(c *fiber.Ctx, req expensedto.CreateEx
 	err = s.expenserepository.CreateExpense(ctx, tx, expense)
 	if err != nil {
 		log.Error(err.Error(), zap.Any("data", expense))
-		return data, dto.ErrInternalServer("Create expense failed")
+		return data, model.ErrInternalServer("Create expense failed")
 	}
 
 	if approval != nil {
 		err = s.expenserepository.CreateApproval(ctx, tx, *approval)
 		if err != nil {
 			log.Error(err.Error(), zap.Any("data", approval))
-			return data, dto.ErrInternalServer("Create expense failed")
+			return data, model.ErrInternalServer("Create expense failed")
 		}
 	}
 
@@ -112,14 +112,14 @@ func (s *expenseServiceImpl) CreateExpense(c *fiber.Ctx, req expensedto.CreateEx
 		err = s.expenserepository.CreatePayment(ctx, tx, *payment)
 		if err != nil {
 			log.Error(err.Error(), zap.Any("data", payment))
-			return data, dto.ErrInternalServer("Create expense failed")
+			return data, model.ErrInternalServer("Create expense failed")
 		}
 	}
 
 	err = s.transaction.Commit(ctx, tx)
 	if err != nil {
 		log.Error(err.Error())
-		return data, dto.ErrInternalServer("Create expense failed")
+		return data, model.ErrInternalServer("Create expense failed")
 	}
 
 	data = expensedto.CreateExpenseRes{

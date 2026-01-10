@@ -26,4 +26,5 @@ func New(server *fiber.App, expenseservice expenseservice.ExpenseService,
 
 	expenses.Post("/", handler.CreateExpense)
 	expenses.Get("/", handler.FetchExpense)
+	expenses.Get("/:id", handler.FetchExpenseDetail)
 }

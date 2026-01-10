@@ -81,7 +81,7 @@ func (r *expenseRepositoryImpl) countFetchExpense(ctx context.Context, q expense
 }
 
 func (r *expenseRepositoryImpl) paginateFetchExpense(sql string, values []any, q expensequery.FetchExpense) (string, []any) {
-	pagination := pagination.New(q.Offset, q.Limit)
+	pagination := pagination.New(q.Page, q.Limit)
 
 	sql += fmt.Sprintf(" limit $%d", len(values)+1)
 	values = append(values, pagination.Limit)
@@ -100,17 +100,17 @@ func (r *expenseRepositoryImpl) queryFetchExpense(q expensequery.FetchExpense) (
 
 	if q.ID != "" {
 		values = append(values, q.ID)
-		conditions = append(conditions, fmt.Sprintf("id = $%d", len(values)))
+		conditions = append(conditions, fmt.Sprintf("e.id = $%d", len(values)))
 	}
 
 	if q.UserID > 0 {
 		values = append(values, q.UserID)
-		conditions = append(conditions, fmt.Sprintf("user_id = $%d", len(values)))
+		conditions = append(conditions, fmt.Sprintf("e.user_id = $%d", len(values)))
 	}
 
 	if q.Status != "" {
 		values = append(values, q.Status)
-		conditions = append(conditions, fmt.Sprintf("status = $%d", len(values)))
+		conditions = append(conditions, fmt.Sprintf("e.status = $%d", len(values)))
 	}
 
 	if len(conditions) == 0 {

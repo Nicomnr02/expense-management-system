@@ -1,4 +1,4 @@
-package dto
+package model
 
 import (
 	"net/http"
@@ -15,7 +15,7 @@ type response struct {
 
 type responsePage struct {
 	response
-	Page
+	Pagination
 }
 
 func Success(ctx *fiber.Ctx, code int, data interface{}) error {
@@ -27,7 +27,7 @@ func Success(ctx *fiber.Ctx, code int, data interface{}) error {
 	})
 }
 
-func SuccessPage(ctx *fiber.Ctx, data interface{}, page Page) error {
+func SuccessPage(ctx *fiber.Ctx, data interface{}, pagination Pagination) error {
 	return ctx.Status(http.StatusOK).JSON(responsePage{
 		response: response{
 			Code:    http.StatusOK,
@@ -35,10 +35,10 @@ func SuccessPage(ctx *fiber.Ctx, data interface{}, page Page) error {
 			Message: "success",
 			Data:    data,
 		},
-		Page: Page{
-			Page:  page.Page,
-			Limit: page.Limit,
-			Total: page.Total,
+		Pagination: Pagination{
+			Page:  pagination.Page,
+			Limit: pagination.Limit,
+			Total: pagination.Total,
 		},
 	})
 }

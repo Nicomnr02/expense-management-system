@@ -1,4 +1,4 @@
-package dto
+package model
 
 import (
 	"github.com/gofiber/fiber/v2"

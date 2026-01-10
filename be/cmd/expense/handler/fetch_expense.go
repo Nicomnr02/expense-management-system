@@ -2,7 +2,7 @@ package expensehandler
 
 import (
 	expensedto "expense-management-system/cmd/expense/dto"
-	"expense-management-system/dto"
+	"expense-management-system/model"
 	"expense-management-system/internal/contextkey"
 	"time"
 
@@ -17,14 +17,14 @@ func (h *expenseHandlerImpl) FetchExpense(c *fiber.Ctx) error {
 	err := c.BodyParser(&request)
 	if err != nil {
 		log.Error(err.Error())
-		return dto.Error(c, dto.ErrBadRequest("Invalid request data"), nil)
+		return model.Error(c, model.ErrBadRequest("Invalid request data"), nil)
 	}
 
 	request.Timestamp = time.Now()
 	data, page, err := h.expenseservice.FetchExpense(c, request)
 	if err != nil {
-		return dto.Error(c, err, nil)
+		return model.Error(c, err, nil)
 	}
 
-	return dto.SuccessPage(c, data, page)
+	return model.SuccessPage(c, data, page)
 }

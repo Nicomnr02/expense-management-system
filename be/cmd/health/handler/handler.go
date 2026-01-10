@@ -4,8 +4,8 @@ import (
 	"context"
 	"expense-management-system/cmd/health/enum"
 	"expense-management-system/database"
-	"expense-management-system/dto"
 	"expense-management-system/internal/contextkey"
+	"expense-management-system/model"
 	"net/http"
 	"time"
 
@@ -33,7 +33,7 @@ func (h *healthHandlerImpl) Check(c *fiber.Ctx) error {
 	err := h.database.Conn.Ping(context.Background())
 	if err != nil {
 		log.Error(err.Error())
-		return dto.Error(c, dto.ErrInternalServer(err.Error()), fiber.Map{
+		return model.Error(c, model.ErrInternalServer(err.Error()), fiber.Map{
 			"status": enum.DOWN,
 			"time":   time,
 			"deps": map[string]string{
@@ -42,7 +42,7 @@ func (h *healthHandlerImpl) Check(c *fiber.Ctx) error {
 		})
 	}
 
-	return dto.Success(c, http.StatusOK, fiber.Map{
+	return model.Success(c, http.StatusOK, fiber.Map{
 		"status": enum.UP,
 		"time":   time,
 		"deps": map[string]string{

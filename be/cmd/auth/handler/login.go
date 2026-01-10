@@ -2,8 +2,8 @@ package authhandler
 
 import (
 	authdto "expense-management-system/cmd/auth/dto"
-	"expense-management-system/dto"
 	"expense-management-system/internal/contextkey"
+	"expense-management-system/model"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -18,13 +18,13 @@ func (h *authHandlerImpl) Login(c *fiber.Ctx) error {
 	err := c.BodyParser(&request)
 	if err != nil {
 		log.Error(err.Error())
-		return dto.Error(c, dto.ErrBadRequest("Invalid request data"), nil)
+		return model.Error(c, model.ErrBadRequest("Invalid request data"), nil)
 	}
 
 	data, err := h.authservice.Login(c, request)
 	if err != nil {
-		return dto.Error(c, err, nil)
+		return model.Error(c, err, nil)
 	}
 
-	return dto.Success(c, http.StatusOK, data)
+	return model.Success(c, http.StatusOK, data)
 }

@@ -1,6 +1,6 @@
-package dto
+package model
 
-type Page struct {
+type Pagination struct {
 	Page  int `json:"page"`
 	Limit int `json:"limit"`
 	Total int `json:"total"`

@@ -1,7 +1,7 @@
 package expensedto
 
 import (
-	"expense-management-system/dto"
+	"expense-management-system/model"
 	"time"
 )
 
@@ -9,8 +9,8 @@ type FetchExpenseReq struct {
 	ID     string `param:"id"`
 	Status string `json:"status"`
 	UserID int    `json:"user_id"`
-	dto.Page
-	Timestamp time.Time 
+	model.Pagination
+	Timestamp time.Time
 }
 
 type FetchExpenseRes struct {

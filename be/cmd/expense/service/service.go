@@ -6,7 +6,7 @@ import (
 	expenserepository "expense-management-system/cmd/expense/repository"
 	"expense-management-system/config"
 	"expense-management-system/database"
-	"expense-management-system/dto"
+	"expense-management-system/model"
 	"expense-management-system/pkg/validator"
 
 	"github.com/gofiber/fiber/v2"
@@ -14,7 +14,9 @@ import (
 
 type ExpenseService interface {
 	CreateExpense(c *fiber.Ctx, req expensedto.CreateExpenseReq) (expensedto.CreateExpenseRes, error)
-	FetchExpense(c *fiber.Ctx, req expensedto.FetchExpenseReq) ([]expensedto.FetchExpenseRes, dto.Page, error)
+
+	FetchExpense(c *fiber.Ctx, req expensedto.FetchExpenseReq) ([]expensedto.FetchExpenseRes, model.Pagination, error)
+	FetchExpenseDetail(c *fiber.Ctx, req expensedto.FetchExpenseDetailReq) (expensedto.FetchExpenseDetailRes, error)
 }
 
 type expenseServiceImpl struct {
