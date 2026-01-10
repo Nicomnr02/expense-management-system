@@ -14,9 +14,11 @@ import (
 
 type ExpenseService interface {
 	CreateExpense(c *fiber.Ctx, req expensedto.CreateExpenseReq) (expensedto.CreateExpenseRes, error)
+	ApproveExpense(c *fiber.Ctx, req expensedto.ApprovalReq) (expensedto.ApprovalRes, error)
+	RejectExpense(c *fiber.Ctx, req expensedto.ApprovalReq) (expensedto.ApprovalRes, error)
 
 	FetchExpense(c *fiber.Ctx, req expensedto.FetchExpenseReq) ([]expensedto.FetchExpenseRes, model.Pagination, error)
-	FetchExpenseDetail(c *fiber.Ctx, req expensedto.FetchExpenseDetailReq) (expensedto.FetchExpenseDetailRes, error)
+	FetchExpenseDetail(c *fiber.Ctx, req expensedto.FetchExpenseDetailReq) (expensedto.FetchExpenseDetailRes, error)	
 }
 
 type expenseServiceImpl struct {

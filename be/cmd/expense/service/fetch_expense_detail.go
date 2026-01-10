@@ -18,23 +18,42 @@ func (s *expenseServiceImpl) FetchExpenseDetail(c *fiber.Ctx, req expensedto.Fet
 		data = expensedto.FetchExpenseDetailRes{}
 	)
 
-	query := expensequery.FetchExpense{
-		ID: req.ID,
-	}
+	expenses, _, err := s.expenserepository.FetchExpense(ctx,
+		expensequery.FetchExpense{
+			ID: req.ID,
+		})
 
-	expenses, _, err := s.expenserepository.FetchExpense(ctx, query)
 	if err != nil {
-		log.Error(err.Error(), zap.Any("query", query))
-		return data, model.ErrInternalServer("Fetch expense failed")
+		log.Error(err.Error(), zap.Any("expense_id", req.ID))
+		return data, model.ErrInternalServer("Fetch expense detail failed")
 	}
 
 	if len(expenses) < 1 {
 		return data, model.ErrBadRequest("Expense not found")
 	}
 
-	expense := expenses[0]
+	approvals, err := s.expenserepository.FetchApproval(ctx,
+		expensequery.FetchApproval{
+			ExpenseID: req.ID,
+		})
 
-	data = expensedto.FetchExpenseDetailRes{
+	if err != nil {
+		log.Error(err.Error(), zap.Any("expense_id", req.ID))
+		return data, model.ErrInternalServer("Fetch expense detail failed")
+	}
+
+	payments, err := s.expenserepository.FetchPayment(ctx,
+		expensequery.FetchPayment{
+			ExternalID: req.ID,
+		})
+
+	if err != nil {
+		log.Error(err.Error(), zap.Any("expense_id", req.ID))
+		return data, model.ErrInternalServer("Fetch expense detail failed")
+	}
+
+	expense := expenses[0]
+	data.Expense = expensedto.FetchExpenseDetailExpenseRes{
 		ID:          expense.ID,
 		UserID:      expense.UserID,
 		UserName:    expense.UserName,
@@ -44,6 +63,30 @@ func (s *expenseServiceImpl) FetchExpenseDetail(c *fiber.Ctx, req expensedto.Fet
 		Status:      expense.Status,
 		SubmittedAt: expense.SubmittedAt,
 		ProcessedAt: expense.ProcessedAt,
+	}
+
+	if len(approvals) > 0 {
+		approval := approvals[0]
+		data.Appproval = &expensedto.FetchExpenseDetailApprovalRes{
+			ID:           approval.ID,
+			ApproverID:   approval.ApproverID,
+			ApproverName: approval.ApproverName,
+			ApproverRole: approval.ApproverRole,
+			Status:       approval.Status,
+			Notes:        approval.Notes,
+			CreatedAt:    approval.CreatedAt,
+		}
+	}
+
+	if len(payments) > 0 {
+		payment := payments[0]
+		data.Payment = &expensedto.FetchExpenseDetailPaymentRes{
+			ID:         payment.ID,
+			ExternalID: payment.ExternalID,
+			Status:     payment.Status,
+			CreatedAt:  payment.CreatedAt,
+			UpdatedAt:  payment.UpdatedAt,
+		}
 	}
 
 	return data, nil

@@ -7,10 +7,12 @@ import (
 )
 
 type Approval struct {
-	ID         int
-	ExpenseID  uuid.UUID
-	ApproverID int
-	Status     string
-	Notes      string
-	CreatedAt  time.Time
+	ID           int
+	ExpenseID    uuid.UUID
+	ApproverID   int
+	ApproverName string
+	ApproverRole string
+	Status       string
+	Notes        string
+	CreatedAt    time.Time
 }
