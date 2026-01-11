@@ -28,19 +28,19 @@ type ExpenseService interface {
 type expenseServiceImpl struct {
 	authrepository    authrepository.Authrepository
 	expenserepository expenserepository.ExpenseRepository
-	transaction       *database.Transaction
-	validator         *validator.Validator
+	transaction       database.Transaction
+	validator         validator.Validator
 	cfg               *config.Config
-	jobClient         *job.Client
+	jobClient         job.Client
 }
 
 func New(
 	authrepository authrepository.Authrepository,
 	expenserepository expenserepository.ExpenseRepository,
-	transaction *database.Transaction,
-	validator *validator.Validator,
+	transaction database.Transaction,
+	validator validator.Validator,
 	cfg *config.Config,
-	jobClient *job.Client,
+	jobClient job.Client,
 ) ExpenseService {
 	return &expenseServiceImpl{
 		authrepository,

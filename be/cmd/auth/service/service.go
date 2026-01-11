@@ -15,12 +15,12 @@ type AuthService interface {
 
 type authserviceImpl struct {
 	authrepository authrepository.Authrepository
-	validator      *validator.Validator
+	validator      validator.Validator
 	JWTManager     *jwt.JWTManager
 }
 
 func New(authrepository authrepository.Authrepository,
-	validator *validator.Validator,
+	validator validator.Validator,
 	JWTManager *jwt.JWTManager,
 ) AuthService {
 	return &authserviceImpl{

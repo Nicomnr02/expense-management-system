@@ -9,26 +9,32 @@ import (
 	"go.uber.org/zap"
 )
 
-type Server struct {
+type Server interface {
+	Ping() error
+	Run() error
+	Shutdown()
+	RegisterWorker(action string, f func(c context.Context, task Task) error)
+}
+type server struct {
 	server *asynq.Server
 	mux    *asynq.ServeMux
 	log    *zap.Logger
 }
 
-func (s *Server) Ping() error {
+func (s *server) Ping() error {
 	return s.server.Ping()
 }
 
-func (s *Server) Run() error {
+func (s *server) Run() error {
 	return s.server.Run(s.mux)
 }
 
-func (s *Server) Shutdown() {
+func (s *server) Shutdown() {
 	s.server.Shutdown()
 }
 
-func NewServer(cfg *config.Config, log *zap.Logger) *Server {
-	server := asynq.NewServer(
+func NewServer(cfg *config.Config, log *zap.Logger) Server {
+	conn := asynq.NewServer(
 		asynq.RedisClientOpt{
 			Addr: cfg.RedisAddr,
 		},
@@ -37,8 +43,8 @@ func NewServer(cfg *config.Config, log *zap.Logger) *Server {
 		},
 	)
 
-	return &Server{
-		server: server,
+	return &server{
+		server: conn,
 		mux:    asynq.NewServeMux(),
 		log:    log,
 	}
@@ -46,7 +52,7 @@ func NewServer(cfg *config.Config, log *zap.Logger) *Server {
 
 type Worker func(c context.Context, t *asynq.Task) error
 
-func (s *Server) RegisterWorker(action string, f func(c context.Context, task Task) error) {
+func (s *server) RegisterWorker(action string, f func(c context.Context, task Task) error) {
 	s.mux.HandleFunc(action, func(c context.Context, t *asynq.Task) error {
 		task := Task{
 			Payload: t.Payload(),

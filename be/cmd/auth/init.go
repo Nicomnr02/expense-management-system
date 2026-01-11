@@ -14,7 +14,7 @@ import (
 func Init(
 	server *fiber.App,
 	database *database.Database,
-	validator *validator.Validator,
+	validator validator.Validator,
 	JWTManager *jwt.JWTManager,
 ) {
 	authRepository := authrepository.New(database)

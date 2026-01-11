@@ -11,7 +11,6 @@ import (
 	"expense-management-system/model"
 	"expense-management-system/pkg/currency"
 	"expense-management-system/pkg/jwt"
-
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
@@ -33,15 +32,7 @@ func (s *expenseServiceImpl) CreateExpense(c *fiber.Ctx, req expensedto.CreateEx
 		return data, model.ErrBadRequest(err.Error())
 	}
 
-	if req.AmountIDR < s.cfg.MinExpenseAmount || req.AmountIDR > s.cfg.MaxExpenseAmount {
-		return data, model.ErrBadRequest(
-			fmt.Sprintf("Amount must be between %s and %s",
-				currency.Rupiah(s.cfg.MinExpenseAmount),
-				currency.Rupiah(s.cfg.MaxExpenseAmount),
-			))
-	}
-
-	expense, approval, payment, payTask, err := s.formExpenseData(c, req)
+	expense, approval, payment, payTask, err := s.formExpenseData(c, req, log)
 	if err != nil {
 		log.Error(err.Error(), zap.Any("req", req))
 		return data, model.ErrInternalServer("Create expense failed")
@@ -72,13 +63,14 @@ func (s *expenseServiceImpl) CreateExpense(c *fiber.Ctx, req expensedto.CreateEx
 
 }
 
-func (s *expenseServiceImpl) formExpenseData(c *fiber.Ctx, req expensedto.CreateExpenseReq) (
+func (s *expenseServiceImpl) formExpenseData(c *fiber.Ctx, req expensedto.CreateExpenseReq, log *zap.Logger) (
 	expensedomain.Expense,
 	*expensedomain.Approval,
 	*expensedomain.Payment,
 	*job.Task,
 	error,
 ) {
+
 	expense := expensedomain.Expense{
 		ID:          uuid.New(),
 		Amount:      req.AmountIDR,
@@ -86,6 +78,17 @@ func (s *expenseServiceImpl) formExpenseData(c *fiber.Ctx, req expensedto.Create
 		ReceiptURL:  req.ReceiptURL,
 		SubmittedAt: req.Timestamp,
 		ProcessedAt: req.Timestamp,
+	}
+
+	if expense.Amount < s.cfg.MinExpenseAmount || expense.Amount > s.cfg.MaxExpenseAmount {
+		return expensedomain.Expense{},
+			&expensedomain.Approval{},
+			&expensedomain.Payment{},
+			&job.Task{},
+			model.ErrBadRequest(fmt.Sprintf("Amount must be between %s and %s",
+				currency.Rupiah(s.cfg.MinExpenseAmount),
+				currency.Rupiah(s.cfg.MaxExpenseAmount),
+			))
 	}
 
 	expense.Status = expenseenum.ExpenseAwaitingApproval
@@ -103,7 +106,7 @@ func (s *expenseServiceImpl) formExpenseData(c *fiber.Ctx, req expensedto.Create
 	if expense.Status == expenseenum.ExpenseAutoApproved {
 		approval = &expensedomain.Approval{
 			ExpenseID:  expense.ID,
-			ApproverID: 1,
+			ApproverID: s.cfg.SystemUserID,
 			Status:     expense.Status,
 			Notes:      "Auto-approved by system.",
 			CreatedAt:  req.Timestamp,
@@ -123,11 +126,12 @@ func (s *expenseServiceImpl) formExpenseData(c *fiber.Ctx, req expensedto.Create
 
 		paymentbyte, err := json.Marshal(&paymentTask)
 		if err != nil {
+			log.Error(err.Error(), zap.Any("paymentTask", paymentTask))
 			return expensedomain.Expense{},
 				&expensedomain.Approval{},
 				&expensedomain.Payment{},
 				&job.Task{},
-				err
+				model.ErrInternalServer("Create expense failed")
 		}
 
 		payTask = &job.Task{
@@ -155,6 +159,11 @@ func (s *expenseServiceImpl) processExpenseData(
 ) error {
 
 	tx, err := s.transaction.Begin(ctx)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
 	defer func() {
 		if err != nil {
 			_ = s.transaction.Rollback(ctx, tx)

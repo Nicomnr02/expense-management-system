@@ -18,14 +18,14 @@ import (
 type healthHandlerImpl struct {
 	router    fiber.Router
 	database  *database.Database
-	jobClient *job.Client
-	jobServer *job.Server
+	jobClient job.Client
+	jobServer job.Server
 }
 
 func New(
 	server *fiber.App,
 	database *database.Database,
-	jobServer *job.Server,
+	jobServer job.Server,
 ) {
 	handler := healthHandlerImpl{
 		router:    server,

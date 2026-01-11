@@ -18,10 +18,10 @@ import (
 func Init(
 	server *fiber.App,
 	database *database.Database,
-	jobClient *job.Client,
-	jobServer *job.Server,
-	validator *validator.Validator,
-	transaction *database.Transaction,
+	jobClient job.Client,
+	jobServer job.Server,
+	validator validator.Validator,
+	transaction database.Transaction,
 	JWTManager *jwt.JWTManager,
 	config *config.Config,
 ) {

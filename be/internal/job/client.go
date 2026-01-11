@@ -7,20 +7,25 @@ import (
 	"github.com/hibiken/asynq"
 )
 
-type Client struct {
+type Client interface {
+	Enqueue(t Task) error
+	Close() error
+	Ping() error
+}
+type client struct {
 	conn *asynq.Client
 	cfg  *config.Config
 }
 
-func NewClient(cfg *config.Config) *Client {
+func NewClient(cfg *config.Config) Client {
 	conn := asynq.NewClient(asynq.RedisClientOpt{
 		Addr: cfg.RedisAddr,
 	})
 
-	return &Client{conn, cfg}
+	return &client{conn, cfg}
 }
 
-func (c *Client) Enqueue(t Task) error {
+func (c *client) Enqueue(t Task) error {
 	task := asynq.NewTask(
 		t.Action,
 		t.Payload,
@@ -33,10 +38,10 @@ func (c *Client) Enqueue(t Task) error {
 	return err
 }
 
-func (c *Client) Close() error {
+func (c *client) Close() error {
 	return c.conn.Close()
 }
 
-func (c *Client) Ping() error {
+func (c *client) Ping() error {
 	return c.conn.Ping()
 }

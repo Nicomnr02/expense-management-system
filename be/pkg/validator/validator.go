@@ -4,14 +4,17 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/go-playground/validator/v10"
+	vd "github.com/go-playground/validator/v10"
 )
 
-type Validator struct {
-	Validate *validator.Validate
+type Validator interface {
+	ValidateStruct(s interface{}) error
+}
+type validator struct {
+	Validate *vd.Validate
 }
 
-func (v *Validator) ValidateStruct(s interface{}) error {
+func (v *validator) ValidateStruct(s interface{}) error {
 	err := v.Validate.Struct(s)
 	if err == nil {
 		return nil
@@ -19,7 +22,7 @@ func (v *Validator) ValidateStruct(s interface{}) error {
 
 	var msg string
 
-	validationErrors, ok := err.(validator.ValidationErrors)
+	validationErrors, ok := err.(vd.ValidationErrors)
 	if !ok || len(validationErrors) == 0 {
 		return err
 	}
@@ -44,8 +47,8 @@ func (v *Validator) ValidateStruct(s interface{}) error {
 	return errors.New(msg)
 }
 
-func New() *Validator {
-	return &Validator{
-		Validate: validator.New(),
+func New() Validator {
+	return &validator{
+		Validate: vd.New(),
 	}
 }

@@ -8,22 +8,28 @@ import (
 
 type Tx pgx.Tx
 
-type Transaction struct {
+type Transaction interface {
+	Begin(c context.Context) (Tx, error)
+	Commit(c context.Context, tx Tx) error
+	Rollback(c context.Context, tx Tx) error
+}
+
+type transaction struct {
 	*Database
 }
 
-func NewTransaction(conn *Database) *Transaction {
-	return &Transaction{conn}
+func NewTransaction(conn *Database) Transaction {
+	return &transaction{conn}
 }
 
-func (t *Transaction) Begin(c context.Context) (Tx, error) {
+func (t *transaction) Begin(c context.Context) (Tx, error) {
 	return t.Conn.Begin(c)
 }
 
-func (t *Transaction) Commit(c context.Context, tx Tx) error {
+func (t *transaction) Commit(c context.Context, tx Tx) error {
 	return tx.Commit(c)
 }
 
-func (t *Transaction) Rollback(c context.Context, tx Tx) error {
+func (t *transaction) Rollback(c context.Context, tx Tx) error {
 	return tx.Rollback(c)
 }

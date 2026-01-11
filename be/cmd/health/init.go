@@ -9,6 +9,6 @@ import (
 )
 
 func Init(server *fiber.App, database *database.Database,
-	jobServer *job.Server) {
+	jobServer job.Server) {
 	healthhandler.New(server, database, jobServer)
 }

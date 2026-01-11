@@ -21,7 +21,7 @@ func (s *authserviceImpl) Login(c *fiber.Ctx, req authdto.LoginReq) (authdto.Log
 		data authdto.LoginRes
 	)
 
-	err := s.validator.Validate.Struct(&req)
+	err := s.validator.ValidateStruct(&req)
 	if err != nil {
 		log.Warn(err.Error())
 		return data, model.ErrBadRequest("Invalid email or password")

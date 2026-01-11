@@ -83,8 +83,8 @@ func Run() error {
 func RunServer(
 	server *fiber.App,
 	database *database.Database,
-	jobClient *job.Client,
-	jobServer *job.Server,
+	jobClient job.Client,
+	jobServer job.Server,
 	cfg *config.Config,
 	log *zap.Logger,
 ) {
@@ -120,8 +120,8 @@ func ShutdownServer(
 	ctx context.Context,
 	server *fiber.App,
 	database *database.Database,
-	jobClient *job.Client,
-	jobServer *job.Server,
+	jobClient job.Client,
+	jobServer job.Server,
 	log *zap.Logger,
 ) {
 	log.Info("shutdown initiated", zap.String("reason", ctx.Err().Error()))
