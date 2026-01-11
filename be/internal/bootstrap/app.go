@@ -71,7 +71,7 @@ func Run() error {
 	validator := validator.New()
 
 	log.Info("register modules...")
-	health.Init(server, db)
+	health.Init(server, db, jobServer)
 	auth.Init(server, db, validator, JWTManager)
 	expense.Init(server, db, jobClient, jobServer, validator, tx, JWTManager, cfg)
 

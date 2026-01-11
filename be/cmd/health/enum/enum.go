@@ -1,7 +1,7 @@
 package enum
 
-// Types of health status
 const (
-	UP   = "UP"
-	DOWN = "DOWN"
+	UP       = "UP"
+	DOWN     = "DOWN"
+	DEGRADED = "DEGRADED"
 )

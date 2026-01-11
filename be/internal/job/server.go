@@ -15,6 +15,10 @@ type Server struct {
 	log    *zap.Logger
 }
 
+func (s *Server) Ping() error {
+	return s.server.Ping()
+}
+
 func (s *Server) Run() error {
 	return s.server.Run(s.mux)
 }

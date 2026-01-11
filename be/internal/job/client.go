@@ -36,3 +36,7 @@ func (c *Client) Enqueue(t Task) error {
 func (c *Client) Close() error {
 	return c.conn.Close()
 }
+
+func (c *Client) Ping() error {
+	return c.conn.Ping()
+}
