@@ -12,6 +12,7 @@ type ExpenseRepository interface {
 	CreateApproval(c context.Context, tx database.Tx, data expensedomain.Approval) error
 	CreatePayment(ctx context.Context, tx database.Tx, data expensedomain.Payment) error
 	UpdateExpense(c context.Context, tx database.Tx, data expensedomain.Expense) error
+	UpdatePayment(c context.Context, tx database.Tx, data expensedomain.Payment) error
 
 	FetchExpense(ctx context.Context, q expensequery.FetchExpense) ([]expensedomain.Expense, int, error)
 	FetchApproval(ctx context.Context, q expensequery.FetchApproval) ([]expensedomain.Approval, error)

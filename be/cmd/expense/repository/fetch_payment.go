@@ -15,7 +15,6 @@ func (r *expenseRepositoryImpl) FetchPayment(ctx context.Context, q expensequery
 		id,
 		external_id,
 		status,
-		retry_attempts,
 		created_at,
 		updated_at
 	from payments p
@@ -48,7 +47,6 @@ func (r *expenseRepositoryImpl) FetchPayment(ctx context.Context, q expensequery
 			&p.ID,
 			&p.ExternalID,
 			&p.Status,
-			&p.RetryAttempts,
 			&p.CreatedAt,
 			&p.UpdatedAt,
 		); err != nil {

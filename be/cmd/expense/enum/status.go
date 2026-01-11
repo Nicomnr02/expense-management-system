@@ -8,4 +8,6 @@ const (
 	ExpenseAutoApproved     = "Auto-approved"
 	ExpenseUnderReview      = "Under Review"
 	ExpenseCompleted        = "Completed"
+
+	PaymentSuccess = "success"
 )

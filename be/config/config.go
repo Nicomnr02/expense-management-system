@@ -33,9 +33,16 @@ type Config struct {
 	JWTAccessTokenDurationMinutes  time.Duration
 	JWTRefreshTokenDurationMinutes time.Duration
 
+	SystemUserID      int
 	MinExpenseAmount  int
 	MaxExpenseAmount  int
 	ApprovalThreshold int
+
+	RedisAddr     string
+	RedisMaxRetry int
+	RedisTimeout  int
+
+	PaymentURL string
 }
 
 func LoadConfig() *Config {
@@ -79,9 +86,13 @@ func LoadConfig() *Config {
 	jwtAccessTokenDurationTime := time.Duration(jwtAccessTokenDuration) * time.Minute
 	jwtRefreshTokenDurationTime := time.Duration(jwtRefreshTokenDuration) * time.Minute
 
+	systemUserID, _ := strconv.Atoi(getEnv("SYSTEM_USER_ID", "1"))
 	minExpenseAmount, _ := strconv.Atoi(getEnv("MIN_EXPENSE_AMOUNT", "10000"))
 	maxExpenseAmount, _ := strconv.Atoi(getEnv("MAX_EXPENSE_AMOUNT", "50000000"))
 	approvalThreshold, _ := strconv.Atoi(getEnv("APPROVALTHRESHOLD", "1000000"))
+
+	redisMaxRetry, _ := strconv.Atoi(getEnv("REDIS_MAX_RETRY", "3"))
+	redisTimeout, _ := strconv.Atoi(getEnv("REDIS_TIMEOUT", "30"))
 
 	return &Config{
 		AppName:         getEnv("APP_NAME", "expenses-management-system"),
@@ -106,9 +117,16 @@ func LoadConfig() *Config {
 		JWTAccessTokenDurationMinutes:  jwtAccessTokenDurationTime,
 		JWTRefreshTokenDurationMinutes: jwtRefreshTokenDurationTime,
 
+		SystemUserID:      systemUserID,
 		MinExpenseAmount:  minExpenseAmount,
 		MaxExpenseAmount:  maxExpenseAmount,
 		ApprovalThreshold: approvalThreshold,
+
+		RedisAddr:     getEnv("REDIS_ADDR", "redis:6379"),
+		RedisMaxRetry: redisMaxRetry,
+		RedisTimeout:  redisTimeout,
+
+		PaymentURL: getEnv("PAYMENT_URL", "https://1620e98f-7759-431c-a2aa-f449d591150b.mock.pstmn.io/v1/payments"),
 	}
 
 }

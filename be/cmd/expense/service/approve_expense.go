@@ -1,12 +1,14 @@
 package expenseservice
 
 import (
+	"encoding/json"
 	authquery "expense-management-system/cmd/auth/repository/query"
 	expensedomain "expense-management-system/cmd/expense/domain"
 	expensedto "expense-management-system/cmd/expense/dto"
 	expenseenum "expense-management-system/cmd/expense/enum"
 	expensequery "expense-management-system/cmd/expense/repository/query"
 	"expense-management-system/internal/contextkey"
+	"expense-management-system/internal/job"
 	"expense-management-system/model"
 	"expense-management-system/pkg/jwt"
 
@@ -16,9 +18,10 @@ import (
 
 func (s *expenseServiceImpl) ApproveExpense(c *fiber.Ctx, req expensedto.ApprovalReq) (expensedto.ApprovalRes, error) {
 	var (
-		ctx  = c.Context()
-		log  = c.Locals(contextkey.Logger).(*zap.Logger)
-		data = expensedto.ApprovalRes{}
+		ctx     = c.Context()
+		log     = c.Locals(contextkey.Logger).(*zap.Logger)
+		data    = expensedto.ApprovalRes{}
+		payTask *job.Task
 	)
 
 	err := s.validator.ValidateStruct(req)
@@ -36,6 +39,22 @@ func (s *expenseServiceImpl) ApproveExpense(c *fiber.Ctx, req expensedto.Approva
 
 	expense.ProcessedAt = req.Timestamp
 	expense.Status = approval.Status
+
+	paymentTask := expensedto.PaymentReq{
+		ExternalID: expense.ID.String(),
+		Amount:     expense.Amount,
+	}
+
+	paymentbyte, err := json.Marshal(&paymentTask)
+	if err != nil {
+		log.Error(err.Error(), zap.Any("payment", payment))
+		return data, model.ErrInternalServer("Approve expense failed")
+	}
+
+	payTask = &job.Task{
+		Action:  expenseenum.Pay,
+		Payload: paymentbyte,
+	}
 
 	tx, err := s.transaction.Begin(ctx)
 	defer func() {
@@ -62,6 +81,13 @@ func (s *expenseServiceImpl) ApproveExpense(c *fiber.Ctx, req expensedto.Approva
 			log.Error(err.Error(), zap.Any("data", payment))
 			return data, model.ErrInternalServer("Approve expense failed")
 		}
+	}
+
+	log.Info("sending paytask queue...")
+	err = s.jobClient.Enqueue(*payTask)
+	if err != nil {
+		log.Error(err.Error(), zap.Any("data", *payTask))
+		return data, model.ErrInternalServer("Create expense failed")
 	}
 
 	err = s.transaction.Commit(ctx, tx)

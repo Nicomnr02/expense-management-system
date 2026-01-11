@@ -8,13 +8,13 @@ import (
 
 func (r *expenseRepositoryImpl) CreateApproval(c context.Context, tx database.Tx, data expensedomain.Approval) error {
 	query := `
-	INSERT INTO approvals (
+	insert into approvals (
         expense_id,
         approver_id,
         status,
         notes,
         created_at
-    ) VALUES ($1, $2, $3, $4, $5)
+    ) values ($1, $2, $3, $4, $5)
 	`
 
 	_, err := tx.Exec(c, query,

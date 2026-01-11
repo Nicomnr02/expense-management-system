@@ -10,8 +10,8 @@ import (
 
 func (r *expenseRepositoryImpl) UpdateExpense(c context.Context, tx database.Tx, data expensedomain.Expense) error {
 	query := `
-	UPDATE expenses
-	SET
+	update expenses
+	set
 		user_id = $2,
 		amount = $3,
 		description = $4,
@@ -19,7 +19,7 @@ func (r *expenseRepositoryImpl) UpdateExpense(c context.Context, tx database.Tx,
 		status = $6,
 		submitted_at = $7,
 		processed_at = $8
-	WHERE id = $1	
+	where id = $1	
 	`
 	if data.ID == uuid.Nil {
 		data.ID = uuid.New()

@@ -8,14 +8,13 @@ import (
 
 func (r *expenseRepositoryImpl) CreatePayment(ctx context.Context, tx database.Tx, data expensedomain.Payment) error {
 	query := `
-		INSERT INTO payments (
+		insert into payments (
 			external_id,
 			status,
-			retry_attempts,
 			created_at,
 			updated_at
 		)
-		VALUES ($1, $2, $3, $4, $5)
+		values ($1, $2, $3, $4)
 	`
 
 	_, err := tx.Exec(
@@ -23,7 +22,6 @@ func (r *expenseRepositoryImpl) CreatePayment(ctx context.Context, tx database.T
 		query,
 		data.ExternalID,
 		data.Status,
-		data.RetryAttempts,
 		data.CreatedAt,
 		data.UpdatedAt,
 	)

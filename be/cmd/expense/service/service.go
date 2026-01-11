@@ -1,11 +1,13 @@
 package expenseservice
 
 import (
+	"context"
 	authrepository "expense-management-system/cmd/auth/repository"
 	expensedto "expense-management-system/cmd/expense/dto"
 	expenserepository "expense-management-system/cmd/expense/repository"
 	"expense-management-system/config"
 	"expense-management-system/database"
+	"expense-management-system/internal/job"
 	"expense-management-system/model"
 	"expense-management-system/pkg/validator"
 
@@ -18,7 +20,9 @@ type ExpenseService interface {
 	RejectExpense(c *fiber.Ctx, req expensedto.ApprovalReq) (expensedto.ApprovalRes, error)
 
 	FetchExpense(c *fiber.Ctx, req expensedto.FetchExpenseReq) ([]expensedto.FetchExpenseRes, model.Pagination, error)
-	FetchExpenseDetail(c *fiber.Ctx, req expensedto.FetchExpenseDetailReq) (expensedto.FetchExpenseDetailRes, error)	
+	FetchExpenseDetail(c *fiber.Ctx, req expensedto.FetchExpenseDetailReq) (expensedto.FetchExpenseDetailRes, error)
+
+	PayExpense(c context.Context, req job.Task) error
 }
 
 type expenseServiceImpl struct {
@@ -27,6 +31,7 @@ type expenseServiceImpl struct {
 	transaction       *database.Transaction
 	validator         *validator.Validator
 	cfg               *config.Config
+	jobClient         *job.Client
 }
 
 func New(
@@ -35,6 +40,7 @@ func New(
 	transaction *database.Transaction,
 	validator *validator.Validator,
 	cfg *config.Config,
+	jobClient *job.Client,
 ) ExpenseService {
 	return &expenseServiceImpl{
 		authrepository,
@@ -42,5 +48,6 @@ func New(
 		transaction,
 		validator,
 		cfg,
+		jobClient,
 	}
 }

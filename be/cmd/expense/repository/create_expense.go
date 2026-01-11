@@ -10,8 +10,8 @@ import (
 
 func (r *expenseRepositoryImpl) CreateExpense(c context.Context, tx database.Tx, data expensedomain.Expense) error {
 	query := `
-		INSERT INTO expenses (id, user_id, amount, description, receipt_url, status, submitted_at, processed_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		insert into expenses (id, user_id, amount, description, receipt_url, status, submitted_at, processed_at)
+		values ($1, $2, $3, $4, $5, $6, $7, $8)
 	`
 	if data.ID == uuid.Nil {
 		data.ID = uuid.New()
