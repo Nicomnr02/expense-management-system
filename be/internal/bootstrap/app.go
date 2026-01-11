@@ -61,7 +61,7 @@ func Run() error {
 		cfg.JWTRefreshTokenDurationMinutes,
 	)
 
-	log.Info("register middlewares...")
+	log.Info("register loggers...")
 	server.Use(
 		middleware.RequestID(log),
 		middleware.RequestLogger(),

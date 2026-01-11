@@ -4,11 +4,9 @@ import (
 	"context"
 	"expense-management-system/config"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/joho/godotenv"
 )
 
 type Database struct {
@@ -21,13 +19,6 @@ func New(Cfg *config.Config) *Database {
 }
 
 func (d *Database) Init() error {
-	if os.Getenv("APP_ENV") == "" {
-		err := godotenv.Load()
-		if err != nil {
-			return err
-		}
-	}
-
 	connStr := fmt.Sprintf(
 		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
 		d.Cfg.DBUser, d.Cfg.DBPassword, d.Cfg.DBHost, d.Cfg.DBPort, d.Cfg.DBName,

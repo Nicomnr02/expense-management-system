@@ -9,12 +9,14 @@ import (
 	"expense-management-system/internal/contextkey"
 	"expense-management-system/internal/job"
 	"expense-management-system/model"
+	"expense-management-system/pkg/currency"
 	"expense-management-system/pkg/jwt"
 
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"github.com/valyala/fasthttp"
 	"go.uber.org/zap"
 )
 
@@ -33,12 +35,50 @@ func (s *expenseServiceImpl) CreateExpense(c *fiber.Ctx, req expensedto.CreateEx
 
 	if req.AmountIDR < s.cfg.MinExpenseAmount || req.AmountIDR > s.cfg.MaxExpenseAmount {
 		return data, model.ErrBadRequest(
-			fmt.Sprintf("Amount must be between %d and %d",
-				s.cfg.MinExpenseAmount,
-				s.cfg.MaxExpenseAmount,
+			fmt.Sprintf("Amount must be between %s and %s",
+				currency.Rupiah(s.cfg.MinExpenseAmount),
+				currency.Rupiah(s.cfg.MaxExpenseAmount),
 			))
 	}
 
+	expense, approval, payment, payTask, err := s.formExpenseData(c, req)
+	if err != nil {
+		log.Error(err.Error(), zap.Any("req", req))
+		return data, model.ErrInternalServer("Create expense failed")
+	}
+
+	user, err := s.authrepository.FetchUser(ctx, authquery.FetchUser{ID: expense.UserID})
+	if err != nil {
+		log.Warn(err.Error())
+		return data, model.ErrBadRequest("User not found")
+	}
+
+	err = s.processExpenseData(ctx, expense, approval, payment, payTask, log)
+	if err != nil {
+		return data, model.ErrInternalServer("Create expense failed")
+	}
+
+	data = expensedto.CreateExpenseRes{
+		ID:          expense.ID,
+		UserID:      user.ID,
+		UserName:    user.Name,
+		AmountIDR:   expense.Amount,
+		SubmittedAt: expense.SubmittedAt,
+		ProcessedAt: expense.ProcessedAt,
+		Status:      expense.Status,
+	}
+
+	return data, nil
+
+}
+
+func (s *expenseServiceImpl) formExpenseData(c *fiber.Ctx, req expensedto.CreateExpenseReq) (
+	expensedomain.Expense,
+	*expensedomain.Approval,
+	*expensedomain.Payment,
+	*job.Task,
+	error,
+) {
 	expense := expensedomain.Expense{
 		ID:          uuid.New(),
 		Amount:      req.AmountIDR,
@@ -83,8 +123,11 @@ func (s *expenseServiceImpl) CreateExpense(c *fiber.Ctx, req expensedto.CreateEx
 
 		paymentbyte, err := json.Marshal(&paymentTask)
 		if err != nil {
-			log.Error(err.Error(), zap.Any("payment", payment))
-			return data, model.ErrInternalServer("Create expense failed")
+			return expensedomain.Expense{},
+				&expensedomain.Approval{},
+				&expensedomain.Payment{},
+				&job.Task{},
+				err
 		}
 
 		payTask = &job.Task{
@@ -99,13 +142,17 @@ func (s *expenseServiceImpl) CreateExpense(c *fiber.Ctx, req expensedto.CreateEx
 		expense.UserID = claim.UserID
 	}
 
-	user, err := s.authrepository.FetchUser(ctx,
-		authquery.FetchUser{ID: expense.UserID},
-	)
-	if err != nil {
-		log.Warn(err.Error())
-		return data, model.ErrBadRequest("User not found")
-	}
+	return expense, approval, payment, payTask, nil
+}
+
+func (s *expenseServiceImpl) processExpenseData(
+	ctx *fasthttp.RequestCtx,
+	expense expensedomain.Expense,
+	approval *expensedomain.Approval,
+	payment *expensedomain.Payment,
+	payTask *job.Task,
+	log *zap.Logger,
+) error {
 
 	tx, err := s.transaction.Begin(ctx)
 	defer func() {
@@ -117,14 +164,14 @@ func (s *expenseServiceImpl) CreateExpense(c *fiber.Ctx, req expensedto.CreateEx
 	err = s.expenserepository.CreateExpense(ctx, tx, expense)
 	if err != nil {
 		log.Error(err.Error(), zap.Any("data", expense))
-		return data, model.ErrInternalServer("Create expense failed")
+		return err
 	}
 
 	if approval != nil {
 		err = s.expenserepository.CreateApproval(ctx, tx, *approval)
 		if err != nil {
 			log.Error(err.Error(), zap.Any("data", approval))
-			return data, model.ErrInternalServer("Create expense failed")
+			return err
 		}
 	}
 
@@ -132,7 +179,7 @@ func (s *expenseServiceImpl) CreateExpense(c *fiber.Ctx, req expensedto.CreateEx
 		err = s.expenserepository.CreatePayment(ctx, tx, *payment)
 		if err != nil {
 			log.Error(err.Error(), zap.Any("data", payment))
-			return data, model.ErrInternalServer("Create expense failed")
+			return err
 		}
 	}
 
@@ -141,26 +188,15 @@ func (s *expenseServiceImpl) CreateExpense(c *fiber.Ctx, req expensedto.CreateEx
 		err := s.jobClient.Enqueue(*payTask)
 		if err != nil {
 			log.Error(err.Error(), zap.Any("data", *payTask))
-			return data, model.ErrInternalServer("Create expense failed")
+			return err
 		}
 	}
 
 	err = s.transaction.Commit(ctx, tx)
 	if err != nil {
 		log.Error(err.Error())
-		return data, model.ErrInternalServer("Create expense failed")
+		return err
 	}
 
-	data = expensedto.CreateExpenseRes{
-		ID:          expense.ID,
-		UserID:      user.ID,
-		UserName:    user.Name,
-		AmountIDR:   expense.Amount,
-		SubmittedAt: expense.SubmittedAt,
-		ProcessedAt: expense.ProcessedAt,
-		Status:      expense.Status,
-	}
-
-	return data, nil
-
+	return nil
 }
