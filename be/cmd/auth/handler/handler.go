@@ -7,16 +7,16 @@ import (
 )
 
 type authHandlerImpl struct {
-	server      *fiber.App
+	server      fiber.Router
 	authservice authservice.AuthService
 }
 
-func New(server *fiber.App, authservice authservice.AuthService) {
+func New(router fiber.Router, authservice authservice.AuthService) {
 	handler := authHandlerImpl{
-		server:      server,
+		server:      router,
 		authservice: authservice,
 	}
 
-	auth := server.Group("auth")
+	auth := router.Group("/auth")
 	auth.Post("/login", handler.Login)
 }

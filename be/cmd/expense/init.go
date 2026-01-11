@@ -16,7 +16,7 @@ import (
 )
 
 func Init(
-	server *fiber.App,
+	router fiber.Router,
 	database *database.Database,
 	jobClient job.Client,
 	jobServer job.Server,
@@ -36,7 +36,7 @@ func Init(
 		jobClient,
 	)
 
-	expensehandler.New(server, expenseService, JWTManager)
+	expensehandler.New(router, expenseService, JWTManager)
 
 	jobServer.RegisterWorker(expenseenum.Pay, expenseService.PayExpense)
 }

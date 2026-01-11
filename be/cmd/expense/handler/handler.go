@@ -10,20 +10,20 @@ import (
 )
 
 type expenseHandlerImpl struct {
-	server         *fiber.App
+	router         fiber.Router
 	expenseservice expenseservice.ExpenseService
 	JWTManager     *jwt.JWTManager
 }
 
-func New(server *fiber.App, expenseservice expenseservice.ExpenseService,
+func New(router fiber.Router, expenseservice expenseservice.ExpenseService,
 	JWTManager *jwt.JWTManager) {
 	handler := expenseHandlerImpl{
-		server:         server,
+		router:         router,
 		expenseservice: expenseservice,
 		JWTManager:     JWTManager,
 	}
 
-	expenses := server.Group("expenses", middleware.Authenticate(JWTManager))
+	expenses := router.Group("expenses", middleware.Authenticate(JWTManager))
 
 	expenses.Post("/", handler.CreateExpense)
 	expenses.Get("/", handler.FetchExpense)

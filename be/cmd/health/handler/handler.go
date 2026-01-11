@@ -23,17 +23,17 @@ type healthHandlerImpl struct {
 }
 
 func New(
-	server *fiber.App,
+	router fiber.Router,
 	database *database.Database,
 	jobServer job.Server,
 ) {
 	handler := healthHandlerImpl{
-		router:    server,
+		router:    router,
 		database:  database,
 		jobServer: jobServer,
 	}
 
-	server.Get("/health", handler.Check)
+	router.Get("/health", handler.Check)
 }
 
 func (h *healthHandlerImpl) Check(c *fiber.Ctx) error {

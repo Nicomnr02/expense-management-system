@@ -12,12 +12,12 @@ import (
 )
 
 func Init(
-	server *fiber.App,
+	router fiber.Router,
 	database *database.Database,
 	validator validator.Validator,
 	JWTManager *jwt.JWTManager,
 ) {
 	authRepository := authrepository.New(database)
 	authService := authservice.New(authRepository, validator, JWTManager)
-	authhandler.New(server, authService)
+	authhandler.New(router, authService)
 }

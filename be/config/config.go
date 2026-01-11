@@ -14,6 +14,7 @@ type Config struct {
 	AppEnv          string
 	AppPort         string
 	AppTimezone     string
+	AppPrefix       string
 	AppReadTimeout  time.Duration
 	AppWriteTimeout time.Duration
 	AppIdleTimeout  time.Duration
@@ -98,6 +99,7 @@ func LoadConfig() *Config {
 		AppName:         getEnv("APP_NAME", "expenses-management-system"),
 		AppPort:         getEnv("APP_PORT", "3000"),
 		AppTimezone:     getEnv("APP_TIMEZONE", "Asia/Jakarta"),
+		AppPrefix:       getEnv("APP_PREFIX", "/api"),
 		AppReadTimeout:  AppReadTimeoutTime,
 		AppWriteTimeout: AppWriteTimeoutTime,
 		AppIdleTimeout:  AppIdleTimeoutTime,

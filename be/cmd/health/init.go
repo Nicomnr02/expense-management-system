@@ -8,7 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func Init(server *fiber.App, database *database.Database,
+func Init(router fiber.Router, database *database.Database,
 	jobServer job.Server) {
-	healthhandler.New(server, database, jobServer)
+	healthhandler.New(router, database, jobServer)
 }

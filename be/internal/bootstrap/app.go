@@ -52,6 +52,9 @@ func Run() error {
 		IdleTimeout:  time.Duration(cfg.AppIdleTimeout) * time.Second,
 	})
 
+	log.Info("preparing server router...")
+	router := server.Group(cfg.AppPrefix)
+
 	log.Info("initializing JWT Manager...")
 	JWTManager := jwt.NewJWTManager(
 		cfg.JWTAccessSecret,
@@ -71,9 +74,9 @@ func Run() error {
 	validator := validator.New()
 
 	log.Info("register modules...")
-	health.Init(server, db, jobServer)
-	auth.Init(server, db, validator, JWTManager)
-	expense.Init(server, db, jobClient, jobServer, validator, tx, JWTManager, cfg)
+	health.Init(router, db, jobServer)
+	auth.Init(router, db, validator, JWTManager)
+	expense.Init(router, db, jobClient, jobServer, validator, tx, JWTManager, cfg)
 
 	RunServer(server, db, jobClient, jobServer, cfg, log)
 
