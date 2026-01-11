@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"expense-management-system/internal/contextkey"
+	"net/http"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -49,9 +50,9 @@ func RequestLogger() fiber.Handler {
 		}
 
 		switch {
-		case status >= 500:
+		case status >= http.StatusInternalServerError:
 			log.Error("http request", fields...)
-		case status >= 400:
+		case status >= http.StatusBadRequest:
 			log.Warn("http request", fields...)
 		default:
 			log.Info("http request", fields...)

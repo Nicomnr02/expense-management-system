@@ -41,3 +41,4 @@ func Authenticate(manager *jwt.JWTManager) fiber.Handler {
 		return c.Next()
 	}
 }
+

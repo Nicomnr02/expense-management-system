@@ -96,6 +96,7 @@ func RunServer(
 	defer stop()
 
 	go func() {
+		log.Info("starting job server on " + cfg.RedisAddr)
 		if err := jobServer.Run(); err != nil {
 			log.Error(err.Error())
 			stop()

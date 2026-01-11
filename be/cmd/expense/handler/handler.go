@@ -3,6 +3,7 @@ package expensehandler
 import (
 	expenseservice "expense-management-system/cmd/expense/service"
 	"expense-management-system/internal/middleware"
+	middlewareenum "expense-management-system/internal/middleware/enum"
 	"expense-management-system/pkg/jwt"
 
 	"github.com/gofiber/fiber/v2"
@@ -27,6 +28,6 @@ func New(server *fiber.App, expenseservice expenseservice.ExpenseService,
 	expenses.Post("/", handler.CreateExpense)
 	expenses.Get("/", handler.FetchExpense)
 	expenses.Get("/:id", handler.FetchExpenseDetail)
-	expenses.Put("/:id/approve", handler.ApproveExpense)
-	expenses.Put("/:id/reject", handler.RejectExpense)
+	expenses.Put("/:id/approve", middleware.AuthorizeRole(middlewareenum.MANAGERROLE), handler.ApproveExpense)
+	expenses.Put("/:id/reject", middleware.AuthorizeRole(middlewareenum.MANAGERROLE), handler.RejectExpense)
 }
