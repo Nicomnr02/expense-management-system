@@ -19,5 +19,5 @@ func Init(
 ) {
 	authRepository := authrepository.New(database)
 	authService := authservice.New(authRepository, validator, JWTManager)
-	authhandler.New(router, authService)
+	authhandler.New(router, authService, JWTManager)
 }

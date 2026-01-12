@@ -11,6 +11,7 @@ import (
 
 type AuthService interface {
 	Login(c *fiber.Ctx, req authdto.LoginReq) (authdto.LoginRes, error)
+	ReadToken(c *fiber.Ctx) (authdto.ReadTokenRes, error)
 }
 
 type authserviceImpl struct {

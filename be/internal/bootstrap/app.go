@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"go.uber.org/zap"
 )
 
@@ -51,6 +52,12 @@ func Run() error {
 		WriteTimeout: time.Duration(cfg.AppWriteTimeout) * time.Second,
 		IdleTimeout:  time.Duration(cfg.AppIdleTimeout) * time.Second,
 	})
+
+	server.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
+		AllowMethods: "GET,POST,PUT,DELETE,OPTIONS",
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
+	}))
 
 	log.Info("preparing server router...")
 	router := server.Group(cfg.AppPrefix)
